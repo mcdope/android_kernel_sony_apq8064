@@ -913,6 +913,11 @@ static int msm_slim_1_rate_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	switch (ucontrol->value.integer.value[0]) {
+	case BTSCO_NBS:
+		msm_slim_1_rate = SAMPLE_RATE_8KHZ;
+		break;
+	case BTSCO_WBS:
+		msm_slim_1_rate = SAMPLE_RATE_16KHZ;
 	case 8000:
 		msm_slim_1_rate = SAMPLE_RATE_8KHZ;
 		break;
@@ -1657,6 +1662,37 @@ static int msm_slim_1_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
+static int msm_slim_1_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+					    struct snd_pcm_hw_params *params)
+{
+	struct snd_interval *rate = hw_param_interval(params,
+						      SNDRV_PCM_HW_PARAM_RATE);
+
+	struct snd_interval *channels = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_CHANNELS);
+
+	rate->min = rate->max = msm_slim_1_rate;
+	channels->min = channels->max = msm_slim_1_rx_ch;
+
+	return 0;
+}
+
+static int msm_slim_1_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+					    struct snd_pcm_hw_params *params)
+{
+	struct snd_interval *rate = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_RATE);
+
+	struct snd_interval *channels = hw_param_interval(params,
+					SNDRV_PCM_HW_PARAM_CHANNELS);
+
+	rate->min = rate->max = msm_slim_1_rate;
+	channels->min = channels->max = msm_slim_1_tx_ch;
+
+	return 0;
+}
+>>>>>>> e2afb5a... ASoC: apq8064 : Fix for voice over USB in Fusion target
+
 static int msm_auxpcm_be_params_fixup(struct snd_soc_pcm_runtime *rtd,
 					struct snd_pcm_hw_params *params)
 {
@@ -1667,7 +1703,7 @@ static int msm_auxpcm_be_params_fixup(struct snd_soc_pcm_runtime *rtd,
 					SNDRV_PCM_HW_PARAM_CHANNELS);
 
 	/* PCM only supports mono output with 8khz sample rate */
-	rate->min = rate->max = 8000;
+	rate->min = rate->max = msm_slim_1_rate;
 	channels->min = channels->max = 1;
 
 	return 0;
