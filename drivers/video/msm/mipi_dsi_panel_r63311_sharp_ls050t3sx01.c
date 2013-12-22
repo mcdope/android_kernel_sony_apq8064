@@ -197,34 +197,6 @@ static const struct mdp_pcc_cfg_rgb color_correction_data[] = {
 	{0x06F00, 0x08000, 0x07200},	/* CLR25_RED */
 };
 
-static const struct mdp_pcc_cfg_rgb color_correction_data_test[] = {
-	{0x08000, 0x06D00, 0x08000},	/* CLR01_GRN */
-	{0x07A00, 0x07100, 0x08000},	/* CLR02_GRN */
-	{0x07400, 0x07180, 0x08000},	/* CLR03_LG */
-	{0x07100, 0x07200, 0x08000},	/* CLR04_LG */
-	{0x06C80, 0x07180, 0x08000},	/* CLR05_YEL */
-	{0x06680, 0x07300, 0x08000},	/* CLR06_YEL */
-	{0x08000, 0x06B80, 0x07080},	/* CLR07_GRN */
-	{0x08000, 0x07400, 0x08000},	/* CLR08_GRN */
-	{0x07A00, 0x07700, 0x08000},	/* CLR09_LG */
-	{0x07600, 0x07780, 0x08000},	/* CLR10_LG */
-	{0x06F80, 0x07980, 0x08000},	/* CLR11_YEL */
-	{0x07080, 0x07E80, 0x08000},	/* CLR12_YEL */
-	{0x08000, 0x06B80, 0x06D00},	/* CLR13_LB */
-	{0x08000, 0x07380, 0x07480},	/* CLR14_LB */
-	{0x08000, 0x08000, 0x08000},	/* CLR15_WHT */
-	{0x07500, 0x08000, 0x07E80},	/* CLR16_ORG */
-	{0x07100, 0x08000, 0x07C80},	/* CLR17_ORG */
-	{0x08000, 0x06900, 0x06500},	/* CLR18_BLE */
-	{0x08000, 0x07300, 0x06F00},	/* CLR19_BLE */
-	{0x07F00, 0x08000, 0x07900},	/* CLR20_PUR */
-	{0x07E80, 0x08000, 0x07680},	/* CLR21_PUR */
-	{0x07380, 0x08000, 0x07600},	/* CLR22_RED */
-	{0x07080, 0x08000, 0x07900},	/* CLR23_RED */
-	{0x07A00, 0x08000, 0x07580},	/* CLR24_RED */
-	{0x06F00, 0x08000, 0x07200},	/* CLR25_RED */
-};
-
 static const struct mdp_pcc_cfg_rgb  color_sub_area[] = {
 	{0x05f00, 0x06900, 0x08000}, /* Area1 */
 	{0x06600, 0x06c00, 0x08000},
@@ -317,19 +289,19 @@ static struct msm_panel_info *get_panel_info(void)
 	pinfo.pdest = DISPLAY_1;
 	pinfo.wait_cycle = 0;
 	pinfo.bpp = 24;
-	pinfo.lcdc.h_back_porch = 75;
-	pinfo.lcdc.h_front_porch = 129;
-	pinfo.lcdc.h_pulse_width = 5;
+	pinfo.lcdc.h_back_porch = 64;
+	pinfo.lcdc.h_front_porch = 134;
+	pinfo.lcdc.h_pulse_width = 16;
 	pinfo.lcdc.v_back_porch = 4;
-	pinfo.lcdc.v_front_porch = 8;
-	pinfo.lcdc.v_pulse_width = 4;
+	pinfo.lcdc.v_front_porch = 4;
+	pinfo.lcdc.v_pulse_width = 2;
 	pinfo.lcdc.border_clr = 0;	/* blk */
 	pinfo.lcdc.underflow_clr = 0x0;	/* black */
 	pinfo.lcdc.hsync_skew = 0;
 	pinfo.bl_max = 15;
 	pinfo.bl_min = 1;
 	pinfo.fb_num = 2;
-	pinfo.clk_rate = 898000000;
+	pinfo.clk_rate = 899000000;
 
 	pinfo.mipi.mode = DSI_VIDEO_MODE;
 	pinfo.mipi.pulse_mode_hsa_he = TRUE;
@@ -404,7 +376,7 @@ const struct panel sharp_ls050t3sx01_panel_id_dlogo_01 = {
 	.panel_id = "ls050t3sx01",
 	.panel_rev = "dlogo_01",
 	.plncfg = &lncfg,
-	.color_correction_tbl = color_correction_data_test,
+	.color_correction_tbl = color_correction_data,
 	.color_subdivision_tbl = color_sub_area,
 };
 
@@ -419,7 +391,7 @@ const struct panel sharp_ls050t3sx01_panel_id_dlogo = {
 	.panel_id = "ls050t3sx01",
 	.panel_rev = "dlogo",
 	.plncfg = &lncfg,
-	.color_correction_tbl = color_correction_data_test,
+	.color_correction_tbl = color_correction_data,
 	.color_subdivision_tbl = color_sub_area,
 };
 
@@ -447,7 +419,7 @@ const struct panel sharp_ls050t3sx01_panel_id_1a_02 = {
 	.panel_id = "ls050t3sx01",
 	.panel_rev = "1a_02",
 	.plncfg = &lncfg,
-	.color_correction_tbl = color_correction_data_test,
+	.color_correction_tbl = color_correction_data,
 	.color_subdivision_tbl = color_sub_area,
 };
 
@@ -462,6 +434,6 @@ const struct panel sharp_ls050t3sx01_panel_id = {
 	.panel_id = "ls050t3sx01",
 	.panel_rev = "generic",
 	.plncfg = &lncfg,
-	.color_correction_tbl = color_correction_data_test,
+	.color_correction_tbl = color_correction_data,
 	.color_subdivision_tbl = color_sub_area,
 };
