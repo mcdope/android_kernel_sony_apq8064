@@ -2923,4 +2923,10 @@ config MSM_MODEM_SUBSYSTEM_RESTART_MONITOR
 	  This option enables a module which can notify user-space
 	  applications of modem subsystem power up/down event via uevent.
 
+config UPDATE_LCDC_LUT
+        default y
+        bool "enable LCDC LUT"
+        help
+          enable LCDC LUT
+
 endif
