@@ -336,11 +336,8 @@ static struct task_struct *select_bad_process(unsigned int *ppoints,
 	unsigned long chosen_points = 0;
 
 	rcu_read_lock();
-<<<<<<< HEAD
+
 	for_each_process_thread(g, p) {
-=======
-	do_each_thread(g, p) {
->>>>>>> a523e04... mm, oom: reduce dependency on tasklist_lock
 		unsigned int points;
 
 		switch (oom_scan_process_thread(p, totalpages, nodemask,
@@ -362,11 +359,7 @@ static struct task_struct *select_bad_process(unsigned int *ppoints,
 			chosen = p;
 			chosen_points = points;
 		}
-<<<<<<< HEAD
 	}
-=======
-	} while_each_thread(g, p);
->>>>>>> a523e04... mm, oom: reduce dependency on tasklist_lock
 	if (chosen)
 		get_task_struct(chosen);
 	rcu_read_unlock();
@@ -477,7 +470,6 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	 * still freeing memory.
 	 */
 	read_lock(&tasklist_lock);
-
 	for_each_thread(p, t) {
 		list_for_each_entry(child, &t->children, sibling) {
 			unsigned int child_points;
