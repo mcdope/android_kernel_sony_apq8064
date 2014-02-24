@@ -718,10 +718,9 @@ static int fsg_lun_open(struct fsg_lun *curlun, const char *filename)
 	num_sectors = size >> curlun->blkbits; /* File size in logic-block-size blocks */
 	min_sectors = 1;
 	if (curlun->cdrom) {
-		num_sectors >>= 2;	/* Reduce to a multiple of 2048 */
 		min_sectors = 300;	/* Smallest track is 300 frames */
 		if (num_sectors >= 256*60*75) {
-			num_sectors = (256*60*75 - 1);
+			num_sectors = 256*60*75 - 1;
 			LINFO(curlun, "file too big: %s\n", filename);
 			LINFO(curlun, "using only first %d blocks\n",
 					(int) num_sectors);
