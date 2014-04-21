@@ -255,6 +255,7 @@ config ARCH_APQ8064
 	select USE_USER_ACCESSIBLE_TIMERS
 	select ARM_USE_USER_ACCESSIBLE_TIMERS
 	select MSM_USE_USER_ACCESSIBLE_TIMERS
+	select HAS_MACH_MEMUTILS
 
 config ARCH_MSM8974
 	bool "MSM8974"
@@ -2907,6 +2908,12 @@ config MSM_USE_USER_ACCESSIBLE_TIMERS
 	help
 	  Enables MSM-specific user accessible timers via a shared
 	  memory page containing the cycle counter.
+
+config HAS_MACH_MEMUTILS
+	default n
+	bool "Motorola MSM memcpy enhancements"
+	help
+	  Faster memcpy performance for Krait
 
 config MSM_MODEM_SUBSYSTEM_RESTART_MONITOR
 	bool "MSM Modem Subsystem Restart Monitor"
