@@ -167,7 +167,7 @@ obj-$(CONFIG_MSM_PM8X60) += pm-8x60.o pm-data.o
 obj-$(CONFIG_MSM_IDLE_STATS) += pm-stats.o
 obj-$(CONFIG_MSM_PM2) += pm2.o
 obj-$(CONFIG_MSM_NOPM) += no-pm.o
-
+obj-$(CONFIG_HAS_MACH_MEMUTILS) += memutils/
 obj-$(CONFIG_MSM_PCIE) += pcie.o pcie_irq.o
 
 obj-$(CONFIG_MSM_SPM_V1) += spm.o

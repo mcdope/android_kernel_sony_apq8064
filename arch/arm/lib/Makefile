@@ -7,7 +7,7 @@
 lib-y		:= backtrace.o changebit.o csumipv6.o csumpartial.o   \
 		   csumpartialcopy.o csumpartialcopyuser.o clearbit.o \
 		   delay.o findbit.o memchr.o memcpy.o		      \
-		   memmove.o memset.o memzero.o setbit.o              \
+		   memset.o memzero.o setbit.o 		              \
 		   strncpy_from_user.o strnlen_user.o                 \
 		   strchr.o strrchr.o                                 \
 		   testchangebit.o testclearbit.o testsetbit.o        \
@@ -20,6 +20,9 @@ mmu-y	:= clear_user.o copy_page.o getuser.o putuser.o
 
 # the code in uaccess.S is not preemption safe and
 # probably faster on ARMv3 only
+ifneq ($(CONFIG_HAS_MACH_MEMUTILS),y)
+  mmu-y += copy_page.o
+  lib-y += memmove.o
 ifeq ($(CONFIG_PREEMPT),y)
   mmu-y	+= copy_from_user.o copy_to_user.o
 else
