@@ -468,8 +468,6 @@ static struct platform_driver this_driver = {
 	},
 };
 
-typedef int (*funcPtr)(void);
-
 static void msm_kcal_early_suspend(struct early_suspend *handler)
 {
 
