@@ -24,6 +24,9 @@ KBUILD_CFLAGS	+=$(call cc-option,-marm,)
 # Never generate .eh_frame
 KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
 
+# Graphite 
+KBUILD_CFLAGS	+= -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+
 # Do not use arch/arm/defconfig - it's always outdated.
 # Select a platform tht is kept up-to-date
 KBUILD_DEFCONFIG := versatile_defconfig
