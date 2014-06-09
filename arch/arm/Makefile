@@ -24,8 +24,7 @@ KBUILD_CFLAGS	+=$(call cc-option,-marm,)
 # Never generate .eh_frame
 KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
 
-# Graphite
-CROSS_COMPILE	?= /media/ext4data/toolchains/sm-arm-androideabi-4.8/arm-linux-androideabi-
+# Graphite 
 KBUILD_CFLAGS	+= -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 
 # Do not use arch/arm/defconfig - it's always outdated.
