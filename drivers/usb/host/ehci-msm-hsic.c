@@ -888,16 +888,8 @@ static irqreturn_t msm_hsic_irq(struct usb_hcd *hcd)
 
 		timeleft = GPT_CNT(ehci_readl(ehci,
 						 &mehci->timer->gptimer1_ctrl));
-		if (!mehci->bus_reset) {
-			if (ktime_us_delta(ktime_get(), mehci->resume_start_t) >
-					RESUME_SIGNAL_TIME_SOF_USEC) {
-				dbg_log_event(NULL, "FPR: GPT prog invalid",
-						timeleft);
-				pr_err("HSIC GPT timer prog invalid\n");
-				timeleft = 0;
-			}
-		}
-		if (timeleft) {
+		if (timeleft && !(temp & PORT_SUSPEND) &&
+		    !(temp & PORT_RESUME)) {
 			if (mehci->bus_reset) {
 				ret = msm_hsic_reset_done(hcd);
 				if (ret) {

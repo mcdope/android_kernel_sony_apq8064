@@ -12,6 +12,18 @@ struct mmc_blk_request {
 	struct mmc_data		data;
 };
 
+enum mmc_blk_status {
+	MMC_BLK_SUCCESS = 0,
+	MMC_BLK_PARTIAL,
+	MMC_BLK_CMD_ERR,
+	MMC_BLK_RETRY,
+	MMC_BLK_ABORT,
+	MMC_BLK_DATA_ERR,
+	MMC_BLK_ECC_ERR,
+	MMC_BLK_NOMEDIUM,
+	MMC_BLK_RETRY_SINGLE,
+};
+
 enum mmc_packed_cmd {
 	MMC_PACKED_NONE = 0,
 	MMC_PACKED_WRITE,
