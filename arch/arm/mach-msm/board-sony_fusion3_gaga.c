@@ -48,76 +48,67 @@ static void lm3533_teardown(struct device *dev)
 	gpio_free(LM3533_HWEN_GPIO);
 	return;
 }
-
 static int lm3533_power_on(struct device *dev)
 {
-	gpio_set_value_cansleep(LM3533_HWEN_GPIO, 1);
-	return 0;
+	int rc = regulator_enable(lm3533_als_vreg);
+	if (rc && regulator_is_enabled(lm3533_als_vreg) <= 0)
+		dev_err(dev, "failed to enable vreg '%s\n", ALS_VREG_ID);
+	else {
+		rc = 0;
+		gpio_set_value_cansleep(LM3533_HWEN_GPIO, 1);
+	}
+	return rc;
 }
-
 static int lm3533_power_off(struct device *dev)
 {
-	gpio_set_value_cansleep(LM3533_HWEN_GPIO, 0);
-	return 0;
-}
-
-static int lm3533_als_power_on(struct device *dev)
-{
-	int rc = regulator_enable(lm3533_als_vreg);
-	if (rc && regulator_is_enabled(lm3533_als_vreg) <= 0) {
-		dev_err(dev, "failed to enable vreg '%s\n", ALS_VREG_ID);
-		return rc;
-	}
-	return 0;
-}
-
-static int lm3533_als_power_off(struct device *dev)
-{
 	int rc = regulator_disable(lm3533_als_vreg);
-	if (rc && regulator_is_enabled(lm3533_als_vreg) != 0) {
+	if (rc && regulator_is_enabled(lm3533_als_vreg) != 0)
 		dev_err(dev, "failed to disable vreg '%s\n", ALS_VREG_ID);
-		return rc;
+	else {
+		rc = 0;
+		gpio_set_value_cansleep(LM3533_HWEN_GPIO, 0);
 	}
-	return 0;
+	return rc;
 }
 
 static struct lm3533_startup_brightenss lm3533_startup_brightnesses[] = {
-				[0] = {"lm3533-red", 0},
-				[1] = { NULL, 0} };
+				[0] = {"lm3533-lcd-bl", 255},
+				[1] = {"lm3533-red", 0},
+				[2] = { NULL, 0} };
 
 struct lm3533_platform_data lm3533_pdata = {
 	.b_cnf = {
 		[LM3533_CBNKA] = {
 			.pwm = 0, /* TDOD: set 0x3f when DBC is present */
 			.ctl = LM3533_HVA_MAP_LIN | LM3533_HVA_BR_CTL,
-			.fsc =  I_UA_TO_FSC(0),
-			.iname = "not-connected",
+			.fsc =  I_UA_TO_FSC(20200),
+			.iname = "lm3533-lcd-bl",
 		},
 		[LM3533_CBNKB] = {
 			.pwm = 0, /* TDOD: set 0x3f when DBC is present */
 			.ctl = LM3533_HVB_MAP_LIN | LM3533_HVB_BR_CTL,
-			.fsc =  I_UA_TO_FSC(20200),
-			.iname = "lm3533-lcd-bl",
+			.fsc =  I_UA_TO_FSC(0),
+			.iname = "not-connected",
 		},
 		[LM3533_CBNKC] = {
 			.pwm = 0,
 			.ctl = LM3533_LV_MAP_LIN | LM3533_LV_BR_CTL,
 			/* 1ma in spec, but this is not possible */
-			.fsc =  I_UA_TO_FSC(10600),
+			.fsc =  I_UA_TO_FSC(5000),
 			.iname = "lm3533-red",
 		},
 		[LM3533_CBNKD] = {
 			.pwm = 0,
 			.ctl = LM3533_LV_MAP_LIN | LM3533_LV_BR_CTL,
 			/* 1ma in spec, but this is not possible */
-			.fsc =  I_UA_TO_FSC(10600),
+			.fsc =  I_UA_TO_FSC(5000),
 			.iname = "lm3533-green",
 		},
 		[LM3533_CBNKE] = {
 			.pwm = 0,
 			.ctl = LM3533_LV_MAP_LIN | LM3533_LV_BR_CTL,
 			/* 1ma in spec, but this is not possible */
-			.fsc =  I_UA_TO_FSC(10600),
+			.fsc =  I_UA_TO_FSC(5000),
 			.iname = "lm3533-blue",
 		},
 		[LM3533_CBNKF] = {
@@ -129,14 +120,14 @@ struct lm3533_platform_data lm3533_pdata = {
 	},
 	.l_cnf = {
 		[LM3533_HVLED1] = {
-			.connected = false,
+			.connected = true,
 			.cpout = true,
 			.bank =  LM3533_CBNKA,
 		},
 		[LM3533_HVLED2] = {
-			.connected = false,
+			.connected = true,
 			.cpout = true,
-			.bank =  LM3533_CBNKB,
+			.bank =  LM3533_CBNKA,
 		},
 		[LM3533_LVLED1] = {
 			.connected = true,
@@ -165,13 +156,11 @@ struct lm3533_platform_data lm3533_pdata = {
 		},
 	},
 	.ovp_boost_pwm = LM3533_BOOST_500KHZ | LM3533_OVP_24V | LM3533_PWM_HIGH,
-	.led_fault = LM3533_OPEN_ENABLED | LM3533_SHORT_ENABLED,
+	.led_fault = LM3533_OPEN_DISABLED | LM3533_SHORT_DISABLED,
 	.setup = lm3533_setup,
 	.teardown = lm3533_teardown,
 	.power_on = lm3533_power_on,
 	.power_off = lm3533_power_off,
-	.als_on = lm3533_als_power_on,
-	.als_off = lm3533_als_power_off,
 	.als_control = LM3533_ALS_143360,
 	.als_input_current = ALS_CUR_UA_TO_REG(0),
 	.startup_brightness = lm3533_startup_brightnesses,
@@ -179,7 +168,7 @@ struct lm3533_platform_data lm3533_pdata = {
 
 int usb_phy_init_seq_host[] = {
 	0x74, 0x80, /* PARAMETER_OVERRIDE_A */
-	0x39, 0x81, /* PARAMETER_OVERRIDE_B */
+	0x30, 0x81, /* PARAMETER_OVERRIDE_B */
 	0x30, 0x82, /* PARAMETER_OVERRIDE_C */
 	0x33, 0x83, /* PARAMETER_OVERRIDE_D */
 	-1
@@ -191,16 +180,15 @@ static int __init startup_rgb(char *str)
 	int vbus;
 	if (get_option(&str, &vbus)) {
 		if (vbus & VBUS_BIT)
-			lm3533_startup_brightnesses[0].brightness = 50;
+			lm3533_startup_brightnesses[1].brightness = 50;
 		return 0;
 	}
 	return -EINVAL;
 }
 
 early_param("startup", startup_rgb);
-
 #endif
 struct apq8064_data apq8064_data = {
 	.v_hs_max = 2850,
-	.hs_detect_extn_cable = false,
+	.hs_detect_extn_cable = true,
 };

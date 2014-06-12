@@ -60,7 +60,6 @@
 #include <mach/msm_bus.h>
 #include <mach/rpm-regulator.h>
 
-
 #ifdef CONFIG_USB_HOST_EXTRA_NOTIFICATION
 #include <linux/usb/host_ext_event.h>
 #endif
