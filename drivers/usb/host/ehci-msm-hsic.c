@@ -883,13 +883,15 @@ static irqreturn_t msm_hsic_irq(struct usb_hcd *hcd)
 
 	if (status & STS_GPTIMER0_INTERRUPT) {
 		int timeleft;
+		u32 temp;
 
-		dbg_log_event(NULL, "FPR: gpt0_isr", mehci->bus_reset);
+		temp = ehci_readl(ehci, &ehci->regs->port_status[0]);
+		dbg_log_event(NULL, "FPR: gpt0_isr", (int) temp);
 
 		timeleft = GPT_CNT(ehci_readl(ehci,
 						 &mehci->timer->gptimer1_ctrl));
-		if (timeleft && !(status & PORT_SUSPEND) &&
-		    !(status & PORT_RESUME)) {
+		if (timeleft && !(temp & PORT_SUSPEND) &&
+		    !(temp & PORT_RESUME)) {
 			if (mehci->bus_reset) {
 				ret = msm_hsic_reset_done(hcd);
 				if (ret) {
