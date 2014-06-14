@@ -84,3 +84,6 @@ GTAGS
 *.orig
 *~
 \#*#
+
+# McDope's scripts
+gpush.sh
