@@ -236,8 +236,7 @@ SME_PMC_OBJS := $(SME_SRC_DIR)/pmc/pmcApi.o \
 SME_QOS_OBJS := $(SME_SRC_DIR)/QoS/sme_Qos.o
 
 SME_CMN_OBJS := $(SME_SRC_DIR)/sme_common/sme_Api.o \
-		$(SME_SRC_DIR)/sme_common/sme_FTApi.o \
-		$(SME_SRC_DIR)/sme_common/sme_Trace.o
+		$(SME_SRC_DIR)/sme_common/sme_FTApi.o
 
 SME_BTC_OBJS := $(SME_SRC_DIR)/btc/btcApi.o
 
@@ -482,8 +481,7 @@ CDEFINES :=	-DANI_BUS_TYPE_PLATFORM=1 \
 		-DWLAN_ACTIVEMODE_OFFLOAD_FEATURE \
         	-DWLAN_FEATURE_HOLD_RX_WAKELOCK \
 		-DWLAN_SOFTAP_VSTA_FEATURE \
-                -DWLAN_FEATURE_ROAM_SCAN_OFFLOAD \
-                -DWLAN_BUG_ON_SKB_ERROR
+                -DWLAN_FEATURE_ROAM_SCAN_OFFLOAD
 
 ifneq ($(CONFIG_PRONTO_WLAN),)
 CDEFINES += -DWCN_PRONTO
@@ -494,7 +492,6 @@ ifeq ($(BUILD_DEBUG_VERSION),1)
 CDEFINES +=	-DWLAN_DEBUG \
 		-DTRACE_RECORD \
 		-DLIM_TRACE_RECORD \
-		-DSME_TRACE_RECORD \
 		-DPE_DEBUG_LOGW \
 		-DPE_DEBUG_LOGE \
 		-DDEBUG
@@ -557,8 +554,24 @@ endif
 # enable the MAC Address auto-generation feature
 CDEFINES += -DWLAN_AUTOGEN_MACADDR_FEATURE
 
-ifeq ($(CONFIG_WLAN_FEATURE_11W),y)
-CDEFINES += -DWLAN_FEATURE_11W
+ifeq ($(CONFIG_ARCH_MSM8960),y)
+EXTRA_CFLAGS += -march=armv7-a
+CDEFINES += -DMSM_PLATFORM_8960
+endif
+
+ifeq ($(CONFIG_ARCH_MSM8X60),y)
+EXTRA_CFLAGS += -march=armv7-a
+CDEFINES += -DMSM_PLATFORM_8660
+endif
+
+ifeq ($(CONFIG_MACH_MSM7X30_SURF),y)
+EXTRA_CFLAGS += -march=armv7-a
+CDEFINES += -DMSM_PLATFORM_7x30
+endif
+
+ifeq ($(CONFIG_MACH_MSM7X27_SURF),y)
+EXTRA_CFLAGS += -march=armv6
+CDEFINES += -DMSM_PLATFORM_7x27
 endif
 
 ifeq ($(PANIC_ON_BUG),1)
