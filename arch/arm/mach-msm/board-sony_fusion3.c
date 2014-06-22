@@ -104,9 +104,6 @@
 #include <linux/console.h>
 #ifdef CONFIG_SONY_ONESEG_TUNER_PM
 #include "board-sony_yuga-oneseg.h"
-#ifdef CONFIG_MACH_SONY_GAGA_KDDI
-#include "board-sony_gaga-kddi-oneseg.h"
-#endif
 #endif
 #ifdef CONFIG_SOMC_ISDBT_TUNER
 #include "board-sony_fusion3-isdbt.h"
@@ -228,26 +225,14 @@ int set_three_phase_freq_badass(int cpufreq);
 
 #if defined(CONFIG_MACH_SONY_YUGA)
 #include "board-sony_fusion3_yuga.h"
-#elif defined(CONFIG_MACH_SONY_YUGA_DCM)
-#include "board-sony_fusion3_yuga.h"
 #elif defined(CONFIG_MACH_SONY_POLLUX)
 #include "board-sony_fusion3_pollux.h"
-#elif defined(CONFIG_MACH_SONY_POLLUX_CDB)
-#include "board-sony_fusion3_pollux.h"
-#elif defined(CONFIG_MACH_SONY_POLLUX_WINDY_CDB)
-#include "board-sony_fusion3_pollux.h"
 #elif defined(CONFIG_MACH_SONY_POLLUX_WINDY)
-#include "board-sony_fusion3_pollux.h"
-#elif defined(CONFIG_MACH_SONY_POLLUX_DCM)
 #include "board-sony_fusion3_pollux.h"
 #elif defined(CONFIG_MACH_SONY_ODIN)
 #include "board-sony_fusion3_odin.h"
 #elif defined(CONFIG_MACH_SONY_DOGO)
 #include "board-sony_fusion3_dogo.h"
-#elif defined(CONFIG_MACH_SONY_DOGO_DCM)
-#include "board-sony_fusion3_dogo.h"
-#elif defined(CONFIG_MACH_SONY_GAGA_KDDI)
-#include "board-sony_fusion3_gaga.h"
 #else
 #error "ERROR: Unknown machine!"
 #endif
@@ -3215,7 +3200,7 @@ static struct platform_device msm_tsens_device = {
 static struct msm_thermal_data msm_thermal_pdata = {
 	.sensor_id = 7,
 	.poll_ms = 1000,
-	.limit_temp_degC = 90,
+	.limit_temp_degC = 110,
 	.temp_hysteresis_degC = 5,
 	.freq_step = 1,
 	.core_limit_temp_degC = 80,
@@ -4374,9 +4359,7 @@ static void __init register_i2c_devices(void)
 	/* Build the matching 'supported_machs' bitmask */
 	if (machine_is_apq8064_cdp())
 		mach_mask = I2C_SURF;
-	else if (machine_is_apq8064_mtp() || machine_is_sony_fusion3() ||
-		machine_is_sony_pollux_windy_cdb() ||
-		machine_is_sony_pollux_windy())
+	else if (machine_is_apq8064_mtp() || machine_is_sony_fusion3() || machine_is_sony_pollux_windy())
 		mach_mask = I2C_FFA;
 	else if (machine_is_apq8064_liquid())
 		mach_mask = I2C_LIQUID;
@@ -4497,9 +4480,7 @@ static void __init apq8064_common_init(void)
 	platform_add_devices(common_devices, ARRAY_SIZE(common_devices));
 		msm_hsic_pdata.swfi_latency =
 			msm_rpmrs_levels[0].latency_us;
-	if ((machine_is_apq8064_mtp() || machine_is_sony_fusion3()) &&
-		!machine_is_sony_pollux_windy_cdb() &&
-		!machine_is_sony_pollux_windy()) {
+	if ((machine_is_apq8064_mtp() || machine_is_sony_fusion3()) && !machine_is_sony_pollux_windy()) {
 		msm_hsic_pdata.log2_irq_thresh = 5;
 		apq8064_device_hsic_host.dev.platform_data = &msm_hsic_pdata;
 		device_initialize(&apq8064_device_hsic_host.dev);
@@ -4507,9 +4488,7 @@ static void __init apq8064_common_init(void)
 	apq8064_pm8xxx_gpio_mpp_init();
 	apq8064_init_mmc();
 
-	if ((machine_is_apq8064_mtp() || machine_is_sony_fusion3()) &&
-		!machine_is_sony_pollux_windy_cdb() &&
-		!machine_is_sony_pollux_windy()) {
+	if ((machine_is_apq8064_mtp() || machine_is_sony_fusion3()) && !machine_is_sony_pollux_windy()) {
 		mdm_8064_device.dev.platform_data = &amdm_platform_data;
 		platform_device_register(&mdm_8064_device);
 	}
@@ -4532,8 +4511,6 @@ static void __init apq8064_common_init(void)
 	switch (sony_hw()) {
 	case HW_YUGA_MAKI:
 	case HW_POLLUX_MAKI:
-	case HW_DOGO_MAKI:
-	case HW_GAGA:
 		isdb_tmm_vreg_low_power_mode();
 	}
 
@@ -4576,9 +4553,7 @@ static void __init sony_fusion3_very_early_init(void)
 	apq8064_early_reserve();
 }
 
-#if defined(CONFIG_MACH_SONY_POLLUX_WINDY_CDB)
-MACHINE_START(SONY_POLLUX_WINDY_CDB, "Sony Mobile fusion3")
-#elif defined(CONFIG_MACH_SONY_POLLUX_WINDY)
+#if defined(CONFIG_MACH_SONY_POLLUX_WINDY)
 MACHINE_START(SONY_POLLUX_WINDY, "Sony Mobile fusion3")
 #else
 MACHINE_START(SONY_FUSION3, "Sony Mobile fusion3")

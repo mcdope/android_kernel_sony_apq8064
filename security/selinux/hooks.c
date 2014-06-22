@@ -17,6 +17,7 @@
  *	Paul Moore <paul@paul-moore.com>
  *  Copyright (C) 2007 Hitachi Software Engineering Co., Ltd.
  *		       Yuichi Nakamura <ynakam@hitachisoft.jp>
+ *  Copyright (C) 2013 Sony Mobile Communications AB.
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2,
@@ -1526,6 +1527,10 @@ static int inode_has_perm(const struct cred *cred,
 
 	sid = cred_sid(cred);
 	isec = inode->i_security;
+	if (unlikely(!isec)) {
+		printk(KERN_CRIT "inode->i_security is NULL, inode is being destroyed.\n");
+		return -EACCES;
+	}
 
 	return avc_has_perm_flags(sid, isec->sid, isec->sclass, perms, adp, flags);
 }
@@ -3891,7 +3896,7 @@ static int sock_has_perm(struct task_struct *task, struct sock *sk, u32 perms)
 	u32 tsid = task_sid(task);
 
 	if (unlikely(!sksec)) {
-		printk(KERN_CRIT "[SELinux] sksec is NULL, socket is already freed. \n");
+		printk(KERN_CRIT "sk->sk_security is NULL, socket is being destroyed.\n");
 		return -EINVAL;
 	}
 

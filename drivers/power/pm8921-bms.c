@@ -213,7 +213,6 @@ struct pm8921_bms_chip {
 	int			last_soc_at_suspend;
 	int			total_ratio_for_readjust_fcc;
 	struct bms_monitor	bmsm;
-	bool			ignore_last_soc;
 };
 
 #define to_chip_from_dev(x) platform_get_drvdata(to_platform_device(x))
@@ -2208,15 +2207,6 @@ static int scale_soc_while_chg(struct pm8921_bms_chip *chip,
 	 * weighted average
 	 */
 
-	/*
-	 * ignore the first last_soc after EOC to
-	 * avoid SOC oscillation between 99% and 100%
-	 */
-	if (chip->ignore_last_soc) {
-		chip->ignore_last_soc = false;
-		return new_soc;
-	}
-
 	/* if we are not charging return last soc */
 	if (the_chip->start_percent == -EINVAL)
 		return prev_soc;
@@ -3087,10 +3077,10 @@ void pm8921_bms_charging_end(int is_battery_full)
 				the_chip->ocv_reading_at_100);
 
 		/*
-		 * ignore the first last_soc after EOC to
-		 * avoid SOC oscillation between 99% and 100%
+		 * Allow SOC to increase without any limitation on
+		 * previous value
 		 */
-		the_chip->ignore_last_soc = true;
+		last_soc = -EINVAL;
 	}
 
 	the_chip->end_percent = calculate_state_of_charge(the_chip, &raw,

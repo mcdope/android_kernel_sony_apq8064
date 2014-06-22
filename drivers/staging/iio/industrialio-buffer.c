@@ -458,9 +458,7 @@ ssize_t iio_buffer_store_enable(struct device *dev,
 		}
 	} else {
 		if (indio_dev->setup_ops->predisable) {
-			mutex_unlock(&indio_dev->mlock);
 			ret = indio_dev->setup_ops->predisable(indio_dev);
-			mutex_lock(&indio_dev->mlock);
 			if (ret)
 				goto error_ret;
 		}
