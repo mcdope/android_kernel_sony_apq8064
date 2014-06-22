@@ -78,6 +78,8 @@ struct bma250_private_data {
 	struct bma250_config resume;	/** < resume configuration */
 };
 
+struct mutex bma250_power_lock;
+
 /**
  *  @brief Set the output data rate for the particular configuration.
  *

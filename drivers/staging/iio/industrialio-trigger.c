@@ -1,14 +1,10 @@
 /* The industrial I/O core, trigger handling functions
  *
  * Copyright (c) 2008 Jonathan Cameron
- * Copyright (C) 2014 Sony Mobile Communications AB.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published by
  * the Free Software Foundation.
- *
- * NOTE: This file has been modified by Sony Mobile Communications AB.
- * Modifications are licensed under the License.
  */
 
 #include <linux/kernel.h>
@@ -371,7 +367,7 @@ static ssize_t iio_trigger_write_current(struct device *dev,
 	return len;
 }
 
-static DEVICE_ATTR(current_trigger, S_IRUGO | S_IWUSR | S_IWGRP,
+static DEVICE_ATTR(current_trigger, S_IRUGO | S_IWUSR,
 		   iio_trigger_read_current,
 		   iio_trigger_write_current);
 
