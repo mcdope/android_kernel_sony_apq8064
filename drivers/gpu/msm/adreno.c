@@ -573,8 +573,6 @@ static void adreno_cleanup_pt(struct kgsl_device *device,
 
 	kgsl_mmu_unmap(pagetable, &device->memstore);
 
-	kgsl_mmu_unmap(pagetable, &adreno_dev->pwron_fixup);
-
 	kgsl_mmu_unmap(pagetable, &device->mmu.setstate_memory);
 }
 
@@ -597,13 +595,9 @@ static int adreno_setup_pt(struct kgsl_device *device,
 	if (result)
 		goto unmap_memptrs_desc;
 
-	result = kgsl_mmu_map_global(pagetable, &adreno_dev->pwron_fixup);
-	if (result)
-		goto unmap_memstore_desc;
-
 	result = kgsl_mmu_map_global(pagetable, &device->mmu.setstate_memory);
 	if (result)
-		goto unmap_pwron_fixup_desc;
+		goto unmap_memstore_desc;
 
 	/*
 	 * Set the mpu end to the last "normal" global memory we use.
@@ -613,9 +607,6 @@ static int adreno_setup_pt(struct kgsl_device *device,
 	device->mh.mpu_range = device->mmu.setstate_memory.gpuaddr +
 				device->mmu.setstate_memory.size;
 	return result;
-
-unmap_pwron_fixup_desc:
-	kgsl_mmu_unmap(pagetable, &adreno_dev->pwron_fixup);
 
 unmap_memstore_desc:
 	kgsl_mmu_unmap(pagetable, &device->memstore);
@@ -3230,9 +3221,6 @@ struct kgsl_memdesc *adreno_find_region(struct kgsl_device *device,
 
 	if (kgsl_gpuaddr_in_memdesc(&device->memstore, gpuaddr, size))
 		return &device->memstore;
-
-	if (kgsl_gpuaddr_in_memdesc(&adreno_dev->pwron_fixup, gpuaddr, size))
-		return &adreno_dev->pwron_fixup;
 
 	if (kgsl_gpuaddr_in_memdesc(&device->mmu.setstate_memory, gpuaddr,
 					size))
