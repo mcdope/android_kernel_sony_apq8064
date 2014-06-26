@@ -367,10 +367,20 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -fno-common \
-		   -Werror-implicit-function-declaration \
-		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks
+                   -fno-strict-aliasing -fno-common \
+                   -Werror-implicit-function-declaration \
+                   -Wno-format-security \
+                   -fno-delete-null-pointer-checks \
+                   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
+                   -Wno-sizeof-pointer-memaccess \
+                   -mfpu=neon-vfpv4 -mtune=cortex-a15 -mcpu=cortex-a15 -fgraphite -floop-parallelize-all \
+                   -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block \
+                   -Ofast -DNDEBUG -funsafe-loop-optimizations -fsection-anchors \
+                   -fivopts -ftree-loop-im -ftree-loop-ivcanon -ffunction-sections \
+                   -fomit-frame-pointer -fgcse-sm -fgcse-las -fweb -ftracer
+                    
+# DONT BOOT (only quick tested): -fdata-sections -frename-registers -fmodulo-sched -fmodulo-sched-allow-regmoves
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
