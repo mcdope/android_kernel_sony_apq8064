@@ -12,7 +12,7 @@
 #include <linux/skbuff.h>
 #include <net/tcp.h>
 
-#include <linux/netfilter/xt_tcpmss.h>
+#include <linux/netfilter/xt_TCPMSS.h>
 #include <linux/netfilter/x_tables.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
