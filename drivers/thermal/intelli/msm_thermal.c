@@ -23,24 +23,33 @@
 #include <linux/workqueue.h>
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
-#include <linux/msm_tsens.h>
 #include <linux/msm_thermal.h>
 #include <mach/cpufreq.h>
 
+#define DEFAULT_POLLING_MS	500
 /* last 3 minutes based on 250ms polling cycle */
 #define MAX_HISTORY_SZ		((3*60*1000) / DEFAULT_POLLING_MS)
 
 struct msm_thermal_stat_data {
 	int32_t temp_history[MAX_HISTORY_SZ];
-	uint32_t overtemp;
+	uint32_t throttled;
 	uint32_t warning;
 	uint32_t normal;
 };
 static struct msm_thermal_stat_data msm_thermal_stats;
 
 static int enabled;
-static struct msm_thermal_data msm_thermal_info;
-
+static struct msm_thermal_data msm_thermal_info = {
+	.sensor_id = 5,
+	.poll_ms = DEFAULT_POLLING_MS,
+	.limit_temp_degC = 80,
+	.temp_hysteresis_degC = 10,
+	.freq_step = 2,
+	.freq_control_mask = 0xf,
+	.core_limit_temp_degC = 85,
+	.core_temp_hysteresis_degC = 10,
+	.core_control_mask = 0xe,
+};
 static uint32_t limited_max_freq_thermal = MSM_CPUFREQ_NO_LIMIT;
 static struct delayed_work check_temp_work;
 static struct workqueue_struct *intellithermal_wq;
@@ -100,10 +109,10 @@ static int update_cpu_max_freq(int cpu, uint32_t max_freq)
 
 	limited_max_freq_thermal = max_freq;
 	if (max_freq != MSM_CPUFREQ_NO_LIMIT)
-		pr_debug("%s: Limiting cpu%d max frequency to %d\n",
+		pr_info("%s: Limiting cpu%d max frequency to %d\n",
 				KBUILD_MODNAME, cpu, max_freq);
 	else
-		pr_debug("%s: Max frequency reset for cpu%d\n",
+		pr_info("%s: Max frequency reset for cpu%d\n",
 				KBUILD_MODNAME, cpu);
 
 	if (cpu_online(cpu)) {
@@ -135,7 +144,7 @@ static void __ref do_core_control(long temp)
 				continue;
 			if (cpus_offlined & BIT(i) && !cpu_online(i))
 				continue;
-			pr_debug("%s: Set Offline: CPU%d Temp: %ld\n",
+			pr_info("%s: Set Offline: CPU%d Temp: %ld\n",
 					KBUILD_MODNAME, i, temp);
 			ret = cpu_down(i);
 			if (ret)
@@ -151,7 +160,7 @@ static void __ref do_core_control(long temp)
 			if (!(cpus_offlined & BIT(i)))
 				continue;
 			cpus_offlined &= ~BIT(i);
-			pr_debug("%s: Allow Online CPU%d Temp: %ld\n",
+			pr_info("%s: Allow Online CPU%d Temp: %ld\n",
 					KBUILD_MODNAME, i, temp);
 			/* If this core is already online, then bring up the
 			 * next offlined core.
@@ -250,7 +259,7 @@ static void __ref check_temp(struct work_struct *work)
 
 	do_core_control(temp);
 	do_freq_control(temp);
-	//pr_debug("msm_thermal: worker is alive!\n");
+	//pr_info("msm_thermal: worker is alive!\n");
 reschedule:
 	if (enabled)
 		queue_delayed_work(intellithermal_wq, &check_temp_work,
@@ -266,7 +275,7 @@ static int __ref msm_thermal_cpu_callback(struct notifier_block *nfb,
 		if (core_control_enabled &&
 			(msm_thermal_info.core_control_mask & BIT(cpu)) &&
 			(cpus_offlined & BIT(cpu))) {
-			pr_debug(
+			pr_info(
 			"%s: Preventing cpu%d from coming online.\n",
 				KBUILD_MODNAME, cpu);
 			return NOTIFY_BAD;
@@ -305,17 +314,17 @@ static int __ref set_enabled(const char *val, const struct kernel_param *kp)
 	if (*val == '0' || *val == 'n' || *val == 'N') {
 		enabled = 0;
 		disable_msm_thermal();
-		pr_debug("msm_thermal: disabling...\n");
+		pr_info("msm_thermal: disabling...\n");
 	} else {
 		if (!enabled) {
 			enabled = 1;
 			queue_delayed_work(intellithermal_wq,
 					   &check_temp_work, 0);
-			pr_debug("msm_thermal: rescheduling...\n");
+			pr_info("msm_thermal: rescheduling...\n");
 		} else
-			pr_debug("msm_thermal: already running...\n");
+			pr_info("msm_thermal: already running...\n");
 	}
-	pr_debug("%s: enabled = %d\n", KBUILD_MODNAME, enabled);
+	pr_info("%s: enabled = %d\n", KBUILD_MODNAME, enabled);
 	ret = param_set_bool(val, kp);
 
 	return ret;
@@ -336,33 +345,24 @@ static ssize_t show_thermal_stats(struct kobject *kobj,
 	int i = 0;
 	int tmp = 0;
 
-	int overtemp, warning;
-
 	/* clear out old stats */
-	msm_thermal_stats.overtemp = 0;
+	msm_thermal_stats.throttled = 0;
 	msm_thermal_stats.warning = 0;
 	msm_thermal_stats.normal = 0;
 
-	overtemp = min(msm_thermal_info.limit_temp_degC,
-			msm_thermal_info.core_limit_temp_degC);
-
-	warning = min((msm_thermal_info.limit_temp_degC -
-	               msm_thermal_info.temp_hysteresis_degC),
-		      (msm_thermal_info.core_limit_temp_degC -
-		       msm_thermal_info.core_temp_hysteresis_degC));
-
 	for (i = 0; i < MAX_HISTORY_SZ; i++) {
 		tmp = msm_thermal_stats.temp_history[i];
-		if (tmp >= overtemp)
-			msm_thermal_stats.overtemp++;
-		else if (tmp < overtemp &&
-			 tmp >=	warning)
+		if (tmp >= msm_thermal_info.limit_temp_degC)
+			msm_thermal_stats.throttled++;
+		else if (tmp < msm_thermal_info.limit_temp_degC &&
+			 tmp >= (msm_thermal_info.limit_temp_degC -
+				 msm_thermal_info.temp_hysteresis_degC))
 			msm_thermal_stats.warning++;
 		else
 			msm_thermal_stats.normal++;
 	}
         return snprintf(buf, PAGE_SIZE, "%u %u %u\n",
-			msm_thermal_stats.overtemp,
+			msm_thermal_stats.throttled,
 			msm_thermal_stats.warning,
 			msm_thermal_stats.normal);
 }
@@ -468,11 +468,11 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 
 	core_control_enabled = !!val;
 	if (core_control_enabled) {
-		pr_debug("%s: Core control enabled\n", KBUILD_MODNAME);
+		pr_info("%s: Core control enabled\n", KBUILD_MODNAME);
 		register_cpu_notifier(&msm_thermal_cpu_notifier);
 		update_offline_cores(cpus_offlined);
 	} else {
-		pr_debug("%s: Core control disabled\n", KBUILD_MODNAME);
+		pr_info("%s: Core control disabled\n", KBUILD_MODNAME);
 		unregister_cpu_notifier(&msm_thermal_cpu_notifier);
 	}
 
@@ -571,9 +571,9 @@ int __init msm_thermal_init(struct msm_thermal_data *pdata)
 {
 	int ret = 0;
 
-	BUG_ON(!pdata);
-	BUG_ON(pdata->sensor_id >= TSENS_MAX_SENSORS);
-	memcpy(&msm_thermal_info, pdata, sizeof(struct msm_thermal_data));
+	//BUG_ON(!pdata);
+	//BUG_ON(pdata->sensor_id >= TSENS_MAX_SENSORS);
+	//memcpy(&msm_thermal_info, pdata, sizeof(struct msm_thermal_data));
 
 	enabled = 1;
 	if (num_possible_cpus() > 1)
