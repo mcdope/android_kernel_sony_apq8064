@@ -333,31 +333,18 @@ static void __cpuinit intelli_plug_work_fn(struct work_struct *work)
 }
 
 #if defined(CONFIG_POWERSUSPEND) || defined(CONFIG_HAS_EARLYSUSPEND)
-static void update_cpu_max_freq(int cpu, uint32_t max_freq)
+static void set_max_freq(int cpu, uint32_t max_freq)
 {
-	int ret = 0;
+	int ret = msm_cpufreq_set_freq_limits(cpu, MSM_CPUFREQ_NO_LIMIT, max_freq);
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
 
-	ret = msm_cpufreq_set_freq_limits(cpu, MSM_CPUFREQ_NO_LIMIT, max_freq);
 	if (ret)
 		return;
 
-	if (max_freq != MSM_CPUFREQ_NO_LIMIT)
-		pr_info("%s: Limiting cpu%d max frequency to %d\n",
-				KBUILD_MODNAME, cpu, max_freq);
-	else
-		pr_info("%s: Max frequency reset for cpu%d\n",
-				KBUILD_MODNAME, cpu);
+	if (!policy)
+		return;
 
-	if (cpu_online(cpu)) {
-		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-		if (!policy)
-			return;
-		cpufreq_driver_target(policy, policy->cur,
-				CPUFREQ_RELATION_H);
-		cpufreq_cpu_put(policy);
-	}
-
-	return;
+	cpufreq_cpu_put(policy);
 }
 
 static void screen_off_limit(bool on)
@@ -370,9 +357,9 @@ static void screen_off_limit(bool on)
 
 	for_each_online_cpu(i) {
 		if (on) {
-			update_cpu_max_freq(i, screen_off_max);
+			set_max_freq(i, screen_off_max);
 		} else {
-			update_cpu_max_freq(i, MSM_CPUFREQ_NO_LIMIT);
+			set_max_freq(i, MSM_CPUFREQ_NO_LIMIT);
 		}
 	}
 }
