@@ -353,7 +353,10 @@ MODFLAGS	= -DMODULE $(KERNELFLAGS)
 CFLAGS_MODULE   = $(MODFLAGS)
 AFLAGS_MODULE   = $(MODFLAGS)
 LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL	= $(KERNELFLAGS) -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+CFLAGS_KERNEL	= $(KERNELFLAGS)
+ifneq (,$(findstring sabermod,$(CROSS_COMPILE)))
+  CFLAGS_KERNEL	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+endif
 AFLAGS_KERNEL	= $(KERNELFLAGS)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
@@ -374,8 +377,10 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
 		   -Wno-sizeof-pointer-memaccess \
                    -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -mfpu=neon-vfpv4 -mtune=cortex-a15  -mcpu=cortex-a15 -fgraphite -floop-parallelize-all \
-		   -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+		   -mfpu=neon-vfpv4 -mtune=cortex-a15  -mcpu=cortex-a15
+ifneq (,$(findstring sabermod,$(CROSS_COMPILE)))
+  KBUILD_CFLAGS   += -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+endif
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
