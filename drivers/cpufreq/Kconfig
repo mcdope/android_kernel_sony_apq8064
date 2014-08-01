@@ -115,6 +115,12 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVEX
 	  you to get a full dynamic cpu frequency capable system by simply
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactiveX' governor for latency-sensitive workloads.
+	  
+config CPU_FREQ_DEFAULT_GOV_ONDEMANDX
+	bool "ondemandx"
+	select CPU_FREQ_GOV_ONDEMANDX
+	help
+	  Use the CPUFreq governor 'ondemandX' as default.
 
 config CPU_FREQ_DEFAULT_GOV_LIONHEART
 	bool "lionheart"
@@ -431,6 +437,13 @@ config CPU_FREQ_GOV_INTERACTIVEX
 	tristate "'interactiveX' cpufreq policy governor"
 	help
 	  'interactiveX' - Modified version of interactive with sleep+wake code.
+
+	   If in doubt, say N.
+
+config CPU_FREQ_GOV_ONDEMANDX
+	tristate "'ondemandX' cpufreq policy governor"
+	help
+	  'ondemandX' - Modified version of ondemand with sleep+wake code.
 
 	   If in doubt, say N.
 
