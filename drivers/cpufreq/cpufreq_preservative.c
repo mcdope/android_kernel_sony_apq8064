@@ -32,7 +32,7 @@
 
 static const int valid_fqs[TABLE_SIZE] = {384000, 486000, 594000, 702000,
 			810000, 918000, 1026000, 1134000, 1242000, 1350000,
-			1458000, 1728000};
+			1458000, 1512000};
 static void do_dbs_timer(struct work_struct *work);
 
 static int thresh_adj = 0;
