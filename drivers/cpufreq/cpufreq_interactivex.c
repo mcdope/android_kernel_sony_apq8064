@@ -25,7 +25,7 @@
 #include <linux/tick.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
-#include <linux/earlysuspend.h>
+#include <linux/powersuspend.h>
 
 #include <asm/cputime.h>
 
@@ -205,7 +205,7 @@ static void cpufreq_interactivex_freq_change_time_work(struct work_struct *work)
 	cpumask_t tmp_mask = work_cpumask;
 	newtarget = freq_threshld;
 
-	for_each_cpu(cpu, tmp_mask) {
+	for_each_cpu(cpu, &tmp_mask) {
 	  if (!suspended) {
 		if (target_freq == policy->max) {
 			if (nr_running() == 1) {
@@ -270,18 +270,17 @@ static void interactivex_suspend(int suspend)
         }
 }
 
-static void interactivex_early_suspend(struct early_suspend *handler) {
+static void interactivex_early_suspend(struct power_suspend *handler) {
      interactivex_suspend(1);
 }
 
-static void interactivex_late_resume(struct early_suspend *handler) {
+static void interactivex_late_resume(struct power_suspend *handler) {
      interactivex_suspend(0);
 }
 
-static struct early_suspend interactivex_power_suspend = {
+static struct power_suspend interactivex_power_suspend = {
         .suspend = interactivex_early_suspend,
         .resume = interactivex_late_resume,
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
 };
 
 static int cpufreq_governor_interactivex(struct cpufreq_policy *new_policy,
@@ -314,7 +313,7 @@ static int cpufreq_governor_interactivex(struct cpufreq_policy *new_policy,
 		pm_idle = cpufreq_idle;
 		policy = new_policy;
 		enabled = 1;
-		register_early_suspend(&interactivex_power_suspend);
+		register_power_suspend(&interactivex_power_suspend);
 		pr_info("[imoseyon] interactivex active\n");
 		freq_table = cpufreq_frequency_get_table(new_policy->cpu);
 		for (i = 0; (freq_table[i].frequency != CPUFREQ_TABLE_END); i++) {
@@ -341,7 +340,7 @@ static int cpufreq_governor_interactivex(struct cpufreq_policy *new_policy,
 		pm_idle = pm_idle_old;
 		del_timer(&per_cpu(cpu_timer, new_policy->cpu));
 		enabled = 0;
-        	unregister_early_suspend(&interactivex_power_suspend);
+        	unregister_power_suspend(&interactivex_power_suspend);
         	pr_info("[imoseyon] interactiveX inactive\n");
 			break;
 

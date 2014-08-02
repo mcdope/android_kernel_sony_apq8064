@@ -33,7 +33,7 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <asm/cputime.h>
-#include <linux/earlysuspend.h>
+#include <linux/powersuspend.h>
 
 static void (*pm_idle_old)(void);
 static atomic_t active_count = ATOMIC_INIT(0);
@@ -318,7 +318,7 @@ static void cpufreq_brazilianwax_freq_change_time_work(struct work_struct *work)
 	struct cpufreq_policy *policy;
 	unsigned int relation = CPUFREQ_RELATION_L;
 	cpumask_t tmp_mask = work_cpumask;
-	for_each_cpu(cpu, tmp_mask) {
+	for_each_cpu(cpu, &tmp_mask) {
 		this_brazilianwax = &per_cpu(brazilianwax_info, cpu);
 		policy = this_brazilianwax->cur_policy;
 		cpu_load = this_brazilianwax->cur_cpu_load;
@@ -671,22 +671,21 @@ static void brazilianwax_suspend(int cpu, int suspend)
 	}
 }
 
-static void brazilianwax_early_suspend(struct early_suspend *handler) {
+static void brazilianwax_early_suspend(struct power_suspend *handler) {
 	int i;
 	for_each_online_cpu(i)
 	brazilianwax_suspend(i,1);
 }
 
-static void brazilianwax_late_resume(struct early_suspend *handler) {
+static void brazilianwax_late_resume(struct power_suspend *handler) {
 	int i;
 	for_each_online_cpu(i)
 	brazilianwax_suspend(i,0);
 }
 
-static struct early_suspend brazilianwax_power_suspend = {
+static struct power_suspend brazilianwax_power_suspend = {
 		.suspend = brazilianwax_early_suspend,
 		.resume = brazilianwax_late_resume,
-		.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
 };
 
 static int cpufreq_governor_brazilianwax(struct cpufreq_policy *new_policy,
@@ -717,7 +716,7 @@ static int cpufreq_governor_brazilianwax(struct cpufreq_policy *new_policy,
 		 this_brazilianwax->enable = 1;
 
 		 // imoseyon - should only register for suspend when governor active
-		 register_early_suspend(&brazilianwax_power_suspend);
+		 register_power_suspend(&brazilianwax_power_suspend);
 		 pr_info("[imoseyon] brazilianwax active\n");
 
 		 // notice no break here!
@@ -742,7 +741,7 @@ static int cpufreq_governor_brazilianwax(struct cpufreq_policy *new_policy,
 
 		pm_idle = pm_idle_old;
 		// unregister when governor exits
-		unregister_early_suspend(&brazilianwax_power_suspend);
+		unregister_power_suspend(&brazilianwax_power_suspend);
 		pr_info("[imoseyon] brazilianwax inactive\n");
 		break;
 	}

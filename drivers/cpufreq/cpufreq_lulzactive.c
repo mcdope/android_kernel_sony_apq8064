@@ -31,7 +31,7 @@
 #include <linux/kthread.h>
 #include <linux/earlysuspend.h>
 #include <asm/cputime.h>
-#include <linux/suspend.h>
+#include <linux/powersuspend.h>
 
 #define LULZACTIVE_VERSION	(2)
 #define LULZACTIVE_AUTHOR	"tegrak"
@@ -1015,7 +1015,7 @@ static int cpufreq_governor_lulzactive(struct cpufreq_policy *new_policy,
  * The minimum amount of time to spend at a frequency before we can step down.
  */
 
-static void lulzactive_early_suspend(struct early_suspend *handler) {
+static void lulzactive_early_suspend(struct power_suspend *handler) {
 	struct cpufreq_lulzactive_cpuinfo *pcpu;
 	unsigned int min_freq, max_freq;
 
@@ -1043,7 +1043,7 @@ static void lulzactive_early_suspend(struct early_suspend *handler) {
 	}
 }
 
-static void lulzactive_late_resume(struct early_suspend *handler) {
+static void lulzactive_late_resume(struct power_suspend *handler) {
 	early_suspended = 0;
 	up_sample_time = up_sample_time_awake;
 	down_sample_time = down_sample_time_awake;
@@ -1055,64 +1055,9 @@ static void lulzactive_late_resume(struct early_suspend *handler) {
 	}
 }
 
-static struct early_suspend lulzactive_power_suspend = {
+static struct power_suspend lulzactive_power_suspend = {
 		.suspend = lulzactive_early_suspend,
 		.resume = lulzactive_late_resume,
-		.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
-};
-
-static int lulzactive_pm_notifier_event(struct notifier_block *this,
-		unsigned long event, void *ptr)
-{
-	struct cpufreq_policy* policy;
-
-	switch (event) {
-	case PM_SUSPEND_PREPARE:
-		suspending = 1;
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_SUSPEND_PREPARE");
-			policy = cpufreq_cpu_get(0);
-			if (policy) {
-				LOGI("PM_SUSPEND_PREPARE using @%uMHz\n", policy->cur);
-			}
-		}
-		break;
-	case PM_POST_SUSPEND:
-		suspending = 0;
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_POST_SUSPEND");
-			policy = cpufreq_cpu_get(0);
-			if (policy) {
-				LOGI("PM_POST_SUSPEND using @%uMHz\n", policy->cur);
-			}
-		}
-		break;
-	case PM_RESTORE_PREPARE:
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_RESTORE_PREPARE");
-		}
-		break;
-	case PM_POST_RESTORE:
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_POST_RESTORE");
-		}
-		break;
-	case PM_HIBERNATION_PREPARE:
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_HIBERNATION_PREPARE");
-		}
-		break;
-	case PM_POST_HIBERNATION:
-		if (debug_mode & LULZACTIVE_DEBUG_SUSPEND) {
-			LOGI("PM_POST_HIBERNATION");
-		}
-		break;
-	}
-	return NOTIFY_DONE;
-}
-
-static struct notifier_block lulzactive_pm_notifier = {
-		.notifier_call = lulzactive_pm_notifier_event,
 };
 
 static int __init cpufreq_lulzactive_init(void)
@@ -1165,8 +1110,7 @@ static int __init cpufreq_lulzactive_init(void)
 	spin_lock_init(&down_cpumask_lock);
 	spin_lock_init(&up_cpumask_lock);
 
-	register_pm_notifier(&lulzactive_pm_notifier);
-	register_early_suspend(&lulzactive_power_suspend);
+	register_power_suspend(&lulzactive_power_suspend);
 
 	return cpufreq_register_governor(&cpufreq_gov_lulzactive);
 
@@ -1184,8 +1128,7 @@ module_init(cpufreq_lulzactive_init);
 static void __exit cpufreq_lulzactive_exit(void)
 {
 	cpufreq_unregister_governor(&cpufreq_gov_lulzactive);
-	unregister_early_suspend(&lulzactive_power_suspend);
-	unregister_pm_notifier(&lulzactive_pm_notifier);
+	unregister_power_suspend(&lulzactive_power_suspend);
 	kthread_stop(up_task);
 	put_task_struct(up_task);
 	destroy_workqueue(down_wq);
