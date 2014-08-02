@@ -96,7 +96,7 @@ static unsigned int up_min_freq;
  * to minimize wakeup issues.
  * Set sleep_max_freq=0 to disable this behavior.
  */
-#define DEFAULT_SLEEP_MAX_FREQ 486000
+#define DEFAULT_SLEEP_MAX_FREQ 384000
 static unsigned int sleep_max_freq;
 
 /*
@@ -114,7 +114,7 @@ static unsigned int threshold_freq;
  * go below this frequency.
  * Set awake_min_freq=0 to disable this behavior.
  */
-#define DEFAULT_AWAKE_MIN_FREQ 702000
+#define DEFAULT_AWAKE_MIN_FREQ 384000
 static unsigned int awake_min_freq;
 
 static unsigned int suspendfreq = 200000;
