@@ -3052,12 +3052,26 @@ struct platform_device apq8064_dcvs_device = {
 	},
 };
 
+static struct msm_dcvs_freq_entry apq8064_freq[] = {
+ 	{ 384000, 166981,  345600},
+ 	{ 702000, 213049,  632502},
+ 	{1026000, 285712,  925613},
+ 	{1242000, 383945, 1176550},
+ 	{1458000, 419729, 1465478},
+ 	{1512000, 434116, 1546674},
+ 
+ };
+ 
 static struct msm_dcvs_core_info apq8064_core_info = {
 	.num_cores		= 4,
 	.sensors		= (int[]){7, 8, 9, 10},
 	.thermal_poll_ms	= 60000,
+	.freq_tbl 		= &apq8064_freq[0],
 	.core_param		= {
 		.core_type	= MSM_DCVS_CORE_TYPE_CPU,
+		.max_time_us 	= 100000,
+ 		.num_freq 	= ARRAY_SIZE(apq8064_freq),
+
 	},
 	.algo_param		= {
 		.disable_pc_threshold		= 1458000,
@@ -3087,7 +3101,7 @@ static struct msm_dcvs_core_info apq8064_core_info = {
 	},
 	.power_param		= {
 		.current_temp	= 25,
-		.num_freq	= 0, /* set at runtime */
+		.num_freq	= ARRAY_SIZE(apq8064_freq), /* set at runtime */
 	}
 };
 
@@ -3102,7 +3116,7 @@ struct platform_device apq8064_msm_gov_device = {
 	.name = "msm_dcvs_gov",
 	.id = -1,
 	.dev = {
-		.platform_data = &gov_platform_data,
+		.platform_data = &apq8064_core_info,
 	},
 };
 
