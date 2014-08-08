@@ -335,16 +335,6 @@ int mpu_memory_write(struct inv_mpu_iio_s *st, u8 mpu_addr, u16 mem_addr,
 	msgs[2].len = len + 1;
 
 	INV_I2C_INC_MPUWRITE(3 + 3 + (2 + len));
-#if CONFIG_DYNAMIC_DEBUG
-	{
-		char *write = 0;
-		pr_debug("%s WM%02X%02X%02X%s%s - %d\n", st->hw->name,
-			 mpu_addr, bank[1], addr[1],
-			 wr_pr_debug_begin(data, len, write),
-			 wr_pr_debug_end(write),
-			 len);
-	}
-#endif
 
 	res = i2c_transfer(st->sl_handle, msgs, 3);
 	if (res != 3) {
@@ -407,15 +397,6 @@ int mpu_memory_read(struct inv_mpu_iio_s *st, u8 mpu_addr, u16 mem_addr,
 
 	INV_I2C_INC_MPUWRITE(3 + 3 + 3);
 	INV_I2C_INC_MPUREAD(len);
-#if CONFIG_DYNAMIC_DEBUG
-	{
-		char *read = 0;
-		pr_debug("%s RM%02X%02X%02X%02X - %s%s\n", st->hw->name,
-			 mpu_addr, bank[1], addr[1], len,
-			 wr_pr_debug_begin(data, len, read),
-			 wr_pr_debug_end(read));
-	}
-#endif
 
 	return res;
 }
